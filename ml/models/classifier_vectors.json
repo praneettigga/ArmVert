@@ -1,0 +1,18 @@
+[
+  {
+    "text": "Dear customer your SBI account will be blocked today. Update KYC immediately http://sbi-kyc.xyz",
+    "logit": 6.23438
+  },
+  {
+    "text": "482913 is your OTP for txn of Rs 2,500 at Amazon. Do not share this OTP with anyone. - HDFC Bank",
+    "logit": -4.82666
+  },
+  {
+    "text": "bhai kal 5 baje milte hai, cricket khelne chalenge?",
+    "logit": -8.70404
+  },
+  {
+    "text": "आपका खाता आज बंद हो जाएगा। तुरंत केवाईसी अपडेट करें",
+    "logit": -2.60341
+  }
+]

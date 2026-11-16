@@ -1,0 +1,3 @@
+text,sender,label,category,lang,template,split,source
+"<paste the exact message text; remove your own name/account digits>","<sender as shown, e.g. AX-HDFCBK-S or +91 98xxxxxxxx>",1,bank_kyc,en,,test,real
+"<a genuine message from the same inbox for balance>","JD-ICICIT-S",0,transaction,en,,test,real

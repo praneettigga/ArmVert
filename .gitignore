@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+ml/data/public/
+ml/models/classifier.pt
+# large LLM files are never committed
+*.pte
+!android/app/src/main/assets/scam_classifier.pte
+*.bin
+tokenizer.model
+# Android
+android/.gradle/
+android/build/
+android/*/build/
+android/local.properties
+android/.idea/
+android/.kotlin/
+*.apk
+*.aab
+*.iml
+.DS_Store

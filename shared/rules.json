@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "notes": "Shared by ml/saavdhan/rules.py and android/core RuleEngine.kt. Weights are log-odds contributions added to the classifier logit. Patterns are matched case-insensitively against NFKC-lowercased text and must stay compatible with both Python re and java.util.regex.",
+
+  "brands": ["sbi", "hdfc", "icici", "axis", "kotak", "pnb", "canara", "bankofbaroda", "unionbank", "yesbank", "idfc", "indusind", "federal", "paytm", "phonepe", "gpay", "googlepay", "bhim", "npci", "rbi", "uidai", "aadhaar", "incometax", "epfo", "indiapost", "irctc", "bescom", "tsspdcl", "mahadiscom", "tneb", "fedex", "dhl", "bluedart", "amazon", "flipkart", "jio", "airtel", "vodafone", "parivahan", "echallan", "vahan"],
+
+  "brand_words": ["sbi", "state bank", "hdfc", "icici", "axis bank", "kotak", "pnb", "punjab national", "canara", "bank of baroda", "union bank", "yes bank", "idfc", "indusind", "npci", "rbi", "reserve bank", "uidai", "aadhaar", "aadhar", "income tax", "epfo", "india post", "irctc", "electricity", "bijli", "बिजली", "आधार", "bank account", "bank se", "your bank", "बैंक खाता", "बैंक से"],
+
+  "official_domain_suffixes": ["bank.in", "fin.in", "gov.in", "nic.in", "sbi.co.in", "onlinesbi.sbi", "sbi", "hdfcbank.com", "icicibank.com", "axisbank.com", "kotak.com", "pnbindia.in", "canarabank.com", "bankofbaroda.in", "unionbankofindia.co.in", "yesbank.in", "idfcfirstbank.com", "indusind.com", "paytm.com", "phonepe.com", "npci.org.in", "rbi.org.in", "irctc.co.in", "amazon.in", "amzn.in", "flipkart.com", "fkrt.it", "jio.com", "airtel.in", "myvi.in", "fedex.com", "dhl.com", "bluedart.com", "google.com"],
+
+  "url_shorteners": ["bit.ly", "tinyurl.com", "cutt.ly", "is.gd", "t.ly", "rb.gy", "shorturl.at", "goo.gl", "t.co", "ow.ly", "tiny.cc", "rebrand.ly", "s.id", "v.gd", "shorte.st", "bitly.ws", "u.to", "clck.ru", "qr.ae"],
+
+  "risky_tlds": ["xyz", "top", "icu", "click", "live", "shop", "online", "site", "buzz", "info", "vip", "cyou", "rest", "sbs", "cfd", "monster", "gq", "tk", "ml", "cf", "ga", "work", "support", "help", "loan", "win", "bond", "club", "fun", "pw"],
+
+  "registered_sender_pattern": "^[a-z]{2}-[a-z0-9]{3,9}(-[pstg])?$",
+  "mobile_sender_pattern": "^(\\+?91[\\- ]?)?[6-9][0-9]{9}$",
+
+  "structural_signals": {
+    "URL_SHORTENER":   {"weight": 1.0, "category": "link", "advice": ["dont_click"], "en": "The link is shortened, so you cannot see where it really goes.", "hi": "लिंक छोटा किया गया है, इसलिए असली पता नहीं दिखता।"},
+    "URL_IP":          {"weight": 2.0, "category": "link", "advice": ["dont_click"], "en": "The link points to a raw number address instead of a real website name.", "hi": "लिंक किसी वेबसाइट नाम के बजाय सीधे नंबर वाले पते पर जाता है।"},
+    "URL_RISKY_TLD":   {"weight": 1.2, "category": "link", "advice": ["dont_click"], "en": "The link uses a cheap domain ending that scammers often use.", "hi": "लिंक ऐसे डोमेन पर है जिसका इस्तेमाल अक्सर ठग करते हैं।"},
+    "URL_PUNYCODE":    {"weight": 1.6, "category": "link", "advice": ["dont_click"], "en": "The link uses look-alike characters to imitate a real website.", "hi": "लिंक में असली वेबसाइट जैसे दिखने वाले नकली अक्षर हैं।"},
+    "URL_BRAND_LOOKALIKE": {"weight": 2.6, "category": "link", "advice": ["dont_click", "verify_official"], "en": "The link uses a bank or company name but is not that company's official website.", "hi": "लिंक में बैंक या कंपनी का नाम है, पर यह उनकी असली वेबसाइट नहीं है।"},
+    "URL_NOT_BANK_IN": {"weight": 1.2, "category": "link", "advice": ["verify_official"], "en": "The message talks about a bank, but the link does not end in .bank.in, which RBI requires for Indian bank websites.", "hi": "संदेश बैंक के बारे में है, पर लिंक .bank.in पर खत्म नहीं होता, जो RBI ने बैंकों के लिए अनिवार्य किया है।"},
+    "URL_HTTP":        {"weight": 0.4, "category": "link", "advice": ["dont_click"], "en": "The link is not secure (http instead of https).", "hi": "लिंक सुरक्षित नहीं है (https नहीं है)।"},
+    "URL_APK":         {"weight": 2.8, "category": "malware", "advice": ["dont_install"], "en": "It asks you to install an app file (.apk) from outside the Play Store. These files can take over your phone and read your OTPs.", "hi": "यह Play Store के बाहर से ऐप फ़ाइल (.apk) इंस्टॉल करवाना चाहता है। ऐसी फ़ाइल आपका फ़ोन और OTP पढ़ सकती है।"},
+    "URL_OFFICIAL":    {"weight": -1.0, "category": "link", "advice": [], "en": "All links go to known official websites.", "hi": "सभी लिंक जाने-माने आधिकारिक वेबसाइट पर जाते हैं।"},
+    "SENDER_MOBILE_IMPERSONATION": {"weight": 2.0, "category": "sender", "advice": ["verify_official"], "en": "It claims to be from a bank or government office but was sent from a personal mobile number. Real banks send SMS from registered sender IDs like AX-HDFCBK.", "hi": "यह बैंक या सरकारी विभाग का होने का दावा करता है, पर किसी निजी मोबाइल नंबर से आया है। असली बैंक AX-HDFCBK जैसे रजिस्टर्ड नाम से SMS भेजते हैं।"},
+    "SENDER_REGISTERED": {"weight": -0.6, "category": "sender", "advice": [], "en": "It came from a registered business sender ID.", "hi": "यह रजिस्टर्ड बिज़नेस सेंडर ID से आया है।"}
+  },
+
+  "keyword_rules": [
+    {"id": "ACCOUNT_THREAT", "category": "bank_kyc", "weight": 1.3, "advice": ["verify_official"],
+     "patterns": ["(account|a/c|acct|card|wallet|sim|number)\\s*(\\w+\\s){0,3}(will be |has been |is |be )?(blocked|block|suspended|suspend|frozen|freeze|deactivated|deactivate|closed|disabled|restricted)", "khata\\s*(band|block)", "(खाता|अकाउंट|सिम|कार्ड)\\s*(\\S+\\s){0,2}(बंद|ब्लॉक|निलंबित)", "(band|block)\\s*(ho\\s*jayega|kar\\s*diya\\s*jayega|ho\\s*jaega)"],
+     "en": "It threatens that your account, card or SIM will be blocked.", "hi": "यह धमकी देता है कि आपका खाता, कार्ड या सिम बंद हो जाएगा।"},
+
+    {"id": "KYC_UPDATE", "category": "bank_kyc", "weight": 1.4, "advice": ["verify_official"],
+     "patterns": ["\\bkyc\\b", "\\bpan\\s*(card)?\\s*(update|link|expire|verify|verification)", "aadha+r\\s*(update|link|verify|verification|seeding)", "\\bekyc\\b", "re-?kyc", "केवाईसी", "पैन\\s*(कार्ड)?\\s*(अपडेट|लिंक)"],
+     "en": "It asks you to update KYC, PAN or Aadhaar through a message. Banks do not ask for this over SMS links.", "hi": "यह SMS लिंक से KYC, PAN या आधार अपडेट करने को कहता है। बैंक ऐसा नहीं करते।"},
+
+    {"id": "URGENCY", "category": "pressure", "weight": 0.8, "advice": [],
+     "patterns": ["\\b(immediately|urgent|urgently|asap|right now)\\b", "within\\s*\\d+\\s*(hours?|hrs?|minutes?|mins?)", "\\b(today|tonight)\\b.{0,40}\\b(last|before|or)\\b", "last\\s*(date|day|chance|warning|reminder|notice)", "final\\s*(notice|warning|reminder)", "\\b(turant|jaldi|abhi|aaj\\s*hi)\\b", "(तुरंत|अभी|आज\\s*ही|जल्दी|अंतिम\\s*चेतावनी)"],
+     "en": "It pushes you to act immediately, a common pressure trick.", "hi": "यह तुरंत कुछ करने का दबाव बनाता है, जो ठगी की आम चाल है।"},
+
+    {"id": "POWER_DISCONNECT", "category": "utility", "weight": 2.0, "advice": ["verify_official", "dont_call_number"],
+     "patterns": ["(electricity|power|bijli|light)\\s*(\\w+\\s){0,3}(connection|supply)?\\s*(will\\s*be\\s*)?(disconnect|disconnected|cut|kat|band)", "electricity\\s*(officer|office|department)", "previous\\s*month\\s*bill\\s*(was\\s*)?not\\s*(been\\s*)?update", "(बिजली)\\s*(\\S+\\s){0,3}(कट|काट|बंद)"],
+     "en": "It says your electricity will be cut tonight unless you call a number. Electricity boards do not do this by SMS from personal numbers.", "hi": "यह कहता है कि बिजली आज रात कट जाएगी जब तक आप किसी नंबर पर कॉल न करें। बिजली विभाग ऐसा नहीं करता।"},
+
+    {"id": "DIGITAL_ARREST", "category": "impersonation_police", "weight": 2.4, "advice": ["hang_up", "call_1930"],
+     "patterns": ["digital\\s*arrest", "arrest\\s*warrant", "money\\s*laundering", "\\b(cbi|ncb|customs|narcotics|cyber\\s*crime\\s*(branch|cell)|crime\\s*branch)\\b.{0,60}\\b(case|parcel|warrant|arrest|fir|investigation)", "(parcel|courier|package)\\s*(\\w+\\s){0,4}(seized|drugs|illegal|passports?|contraband)", "(trai|dot).{0,40}(number|sim).{0,30}(block|disconnect|suspend)", "(डिजिटल\\s*अरेस्ट|गिरफ्तारी|मनी\\s*लॉन्ड्रिंग)"],
+     "en": "It claims police, CBI, customs or TRAI action against you. There is no such thing as a 'digital arrest' in Indian law, and officials never demand money on calls.", "hi": "यह पुलिस, CBI, कस्टम या TRAI की कार्रवाई का दावा करता है। भारतीय कानून में 'डिजिटल अरेस्ट' जैसी कोई चीज़ नहीं है।"},
+
+    {"id": "PRIZE_LOTTERY", "category": "prize", "weight": 1.6, "advice": ["dont_click"],
+     "patterns": ["\\b(you\\s*have\\s*won|you\\s*won|winner|lottery|lucky\\s*draw|jackpot|kbc|kaun\\s*banega)\\b", "(claim|redeem)\\s*(your\\s*)?(prize|reward|gift|cashback|points)", "reward\\s*points?.{0,40}(expire|redeem)", "(इनाम|लॉटरी|जीत\\s*लिया|जीते\\s*हैं|लकी\\s*ड्रॉ)"],
+     "en": "It promises a prize, lottery or reward you never entered for.", "hi": "यह ऐसे इनाम या लॉटरी का वादा करता है जिसमें आपने हिस्सा ही नहीं लिया।"},
+
+    {"id": "JOB_TASK", "category": "job_task", "weight": 1.6, "advice": ["dont_pay_upfront"],
+     "patterns": ["(work|earn)\\s*from\\s*home", "part[\\s-]*time\\s*(job|work)", "earn\\s*(rs\\.?|₹|inr)?\\s*\\d+.{0,25}(daily|per\\s*day|a\\s*day|/day|per\\s*hour)", "(like|subscribe|rate|review).{0,30}(videos?|hotels?|products?).{0,40}(earn|paid|income|₹|rs)", "(prepaid|merchant)\\s*task", "(ghar\\s*baithe|roz)\\s*(kamaye|kamao|kamai)", "(घर\\s*बैठे|रोज़?\\s*कमाएं)"],
+     "en": "It offers easy money for simple online tasks. These 'task' jobs end with you paying a deposit you never get back.", "hi": "यह आसान ऑनलाइन काम के बदले पैसे का लालच देता है। ऐसे 'टास्क' जॉब में आखिर में आपसे ही पैसे जमा करवाए जाते हैं।"},
+
+    {"id": "INVESTMENT", "category": "investment", "weight": 1.5, "advice": ["dont_pay_upfront"],
+     "patterns": ["guaranteed\\s*(returns?|profit|income)", "(double|triple)\\s*(your\\s*)?(money|investment)", "\\d+\\s*%\\s*(daily|weekly|monthly)?\\s*(returns?|profit)", "(stock|share|trading|crypto|ipo)\\s*(\\w+\\s){0,3}(tips|vip|group|signals|allotment)", "(vip|premium)\\s*(trading|stock)\\s*group", "(पैसा\\s*डबल|गारंटीड\\s*रिटर्न)"],
+     "en": "It promises guaranteed or very high investment returns. No genuine investment can guarantee profit.", "hi": "यह गारंटीड या बहुत ज़्यादा मुनाफ़े का वादा करता है। कोई भी असली निवेश मुनाफ़े की गारंटी नहीं देता।"},
+
+    {"id": "UPI_PIN_TO_RECEIVE", "category": "upi", "weight": 2.6, "advice": ["no_pin_to_receive"],
+     "patterns": ["(enter|put|type|dalo|daalo|daale)\\s*(\\w+\\s){0,3}(upi\\s*)?pin.{0,60}(receive|get|credit|refund|cashback|milenge|aayenge)", "(receive|get|credit|refund|cashback).{0,60}(enter|put|type)\\s*(\\w+\\s){0,3}(upi\\s*)?pin", "(approve|accept)\\s*(the\\s*)?(collect|payment)\\s*request.{0,50}(receive|get|refund|cashback|prize)", "(पिन|pin)\\s*(\\S+\\s){0,3}(डालें|डालकर|दर्ज).{0,40}(पैसे|रिफंड|कैशबैक)", "(पैसे|रिफंड|कैशबैक)\\s*(\\S+\\s){0,6}(पिन|pin)\\s*(\\S+\\s){0,1}(डालें|डालिए|डालकर|दर्ज)"],
+     "en": "It asks you to enter your UPI PIN to receive money. You never need a PIN to receive money; a PIN only sends money out of your account.", "hi": "यह पैसे पाने के लिए UPI PIN डालने को कहता है। पैसे पाने के लिए कभी PIN नहीं लगता; PIN सिर्फ़ पैसे भेजने के लिए होता है।"},
+
+    {"id": "CREDENTIAL_ASK", "category": "credentials", "weight": 2.2, "advice": ["dont_share_otp"],
+     "patterns": ["(share|send|tell|forward|provide|give|reply\\s*with)\\s*(\\w+\\s){0,3}(otp|cvv|upi\\s*pin|atm\\s*pin|mpin|password|card\\s*(number|details))", "(otp|cvv|pin)\\s*(batao|bataiye|bhejo|bhejiye|share\\s*karo|de\\s*do)", "(sent|send|forwarded)\\s*(\\w+\\s){0,3}otp.{0,60}(send|share|forward)\\s*(it\\s*)?back", "(ओटीपी|OTP|पिन)\\s*(\\S+\\s){0,2}(बताएं|बताइए|भेजें|शेयर)"],
+     "negations": ["do\\s*not", "don'?t", "never", "not\\s*to", "na\\s*kare", "na\\s*karein", "mat", "न\\s*करें", "ना\\s*करें", "कभी\\s*नहीं"],
+     "en": "It asks for your OTP, PIN, CVV or password. No bank, company or official will ever ask for these.", "hi": "यह आपका OTP, PIN, CVV या पासवर्ड मांगता है। कोई भी बैंक या अधिकारी कभी ये नहीं मांगता।"},
+
+    {"id": "APK_INSTALL", "category": "malware", "weight": 2.2, "advice": ["dont_install"],
+     "patterns": ["\\.apk\\b", "(download|install)\\s*(\\w+\\s){0,3}(apk|app\\s*file)", "(rto|challan|pm\\s*kisan|aadhaar|bank|kyc|customer\\s*support)\\s*(\\w+\\s){0,2}apk"],
+     "en": "It tells you to install an app file sent by message. Fake 'RTO challan', 'PM Kisan' and 'bank KYC' apps steal OTPs and bank access.", "hi": "यह संदेश से भेजी गई ऐप फ़ाइल इंस्टॉल करने को कहता है। नकली 'RTO चालान' या 'PM किसान' ऐप OTP और बैंक एक्सेस चुराते हैं।"},
+
+    {"id": "CHALLAN", "category": "challan", "weight": 1.0, "advice": ["verify_official"],
+     "patterns": ["(traffic|e-?)\\s*challan", "challan\\s*(\\w+\\s){0,3}(pending|due|unpaid|pay)", "(चालान)"],
+     "en": "It mentions a traffic challan. Check challans only on the official parivahan.gov.in website or app, not via message links.", "hi": "यह ट्रैफ़िक चालान की बात करता है। चालान सिर्फ़ parivahan.gov.in पर ही जांचें।"},
+
+    {"id": "REMOTE_ACCESS", "category": "remote_access", "weight": 2.4, "advice": ["dont_install", "hang_up"],
+     "patterns": ["\\b(anydesk|teamviewer|quick\\s*support|quicksupport|rustdesk|airdroid|screen\\s*shar(e|ing))\\b"],
+     "en": "It asks you to install a screen-sharing app. This lets a stranger see and control your phone, including your bank apps.", "hi": "यह स्क्रीन-शेयरिंग ऐप इंस्टॉल करवाना चाहता है, जिससे अजनबी आपका फ़ोन और बैंक ऐप चला सकता है।"},
+
+    {"id": "REFUND_SUPPORT", "category": "refund", "weight": 1.0, "advice": ["verify_official", "dont_call_number"],
+     "patterns": ["(refund|cashback)\\s*(\\w+\\s){0,4}(pending|processed|initiated|failed|stuck)", "(customer\\s*care|helpline|support)\\s*(no\\.?|number)?\\s*[:\\-]?\\s*\\+?\\d[\\d\\s\\-]{8,}", "(call|contact)\\s*(\\w+\\s){0,3}(customer\\s*care|executive|officer)"],
+     "en": "It asks you to contact a 'customer care' number given in the message. Scammers post fake helpline numbers; use only the number on the official app or card.", "hi": "यह संदेश में दिए 'कस्टमर केयर' नंबर पर संपर्क करने को कहता है। सिर्फ़ आधिकारिक ऐप या कार्ड पर लिखा नंबर ही इस्तेमाल करें।"},
+
+    {"id": "LOAN_OFFER", "category": "loan", "weight": 1.1, "advice": ["dont_pay_upfront"],
+     "patterns": ["(instant|pre-?approved|personal)\\s*loan", "loan\\s*(\\w+\\s){0,3}(approved|sanctioned|without\\s*(documents|cibil))", "(processing|registration)\\s*fee.{0,40}loan", "(लोन|ऋण)\\s*(\\S+\\s){0,2}(मंजूर|स्वीकृत)"],
+     "en": "It offers an instant or pre-approved loan. Fake loan apps charge 'processing fees' and later harass borrowers.", "hi": "यह तुरंत या पहले से मंज़ूर लोन का लालच देता है। नकली लोन ऐप 'प्रोसेसिंग फ़ीस' लेकर बाद में परेशान करते हैं।"},
+
+    {"id": "FAMILY_EMERGENCY", "category": "impersonation_family", "weight": 1.6, "advice": ["verify_family"],
+     "patterns": ["(hi|hello)\\s*(mom|mum|maa|papa|dad|beta)\\b.{0,60}(new\\s*number|lost\\s*(my\\s*)?phone)", "this\\s*is\\s*my\\s*new\\s*number", "(accident|hospital|police\\s*station).{0,60}(send|transfer|need)\\s*(money|rs|₹|\\d)", "(accident|hospital).{0,80}(bhejo|bhej\\s*do|bhejdo|transfer\\s*karo)", "(मेरा\\s*नया\\s*नंबर|एक्सीडेंट).{0,60}(पैसे|भेज)"],
+     "en": "It claims to be a family member on a new number who urgently needs money. Call them on their old number first.", "hi": "यह किसी परिवार वाले के नए नंबर से पैसे मांगने का दावा करता है। पहले उनके पुराने नंबर पर कॉल करके पुष्टि करें।"},
+
+    {"id": "GOVT_SCHEME", "category": "govt_scheme", "weight": 1.0, "advice": ["verify_official"],
+     "patterns": ["(free|muft)\\s*(laptop|recharge|data|scooty|ration|gas\\s*cylinder)", "(pm|pradhan\\s*mantri)\\s*(\\w+\\s){0,2}(yojana|scheme|kisan).{0,60}(register|apply|link|click|claim)", "(yojana|scheme)\\s*(\\w+\\s){0,3}(amount|benefit|subsidy)\\s*(\\w+\\s){0,3}(credit|claim|pending)", "(मुफ़्त|मुफ्त|फ्री)\\s*(\\S+\\s){0,2}(लैपटॉप|रिचार्ज|राशन)"],
+     "en": "It uses a government scheme to lure you to a link. Government benefits are applied for only on official .gov.in portals.", "hi": "यह सरकारी योजना के नाम पर लिंक खुलवाना चाहता है। सरकारी लाभ सिर्फ़ .gov.in पोर्टल पर मिलते हैं।"},
+
+    {"id": "DELIVERY_HOLD", "category": "delivery", "weight": 1.4, "advice": ["dont_click", "verify_official"],
+     "patterns": ["(package|parcel|shipment|consignment|article)\\s*(\\w+\\s){0,4}(on\\s*hold|could\\s*not\\s*be\\s*delivered|undelivered|returned|held)", "(incomplete|wrong|invalid)\\s*address", "(re-?delivery|redelivery|customs|shipping|delivery)\\s*(fee|charge|charges)"],
+     "en": "It says a parcel is on hold and asks you to update the address or pay a small fee. India Post and couriers do not collect fees through SMS links.", "hi": "यह कहता है कि पार्सल रुका है और पता अपडेट करने या छोटी फ़ीस भरने को कहता है। इंडिया पोस्ट ऐसा SMS लिंक से नहीं करता।"},
+
+    {"id": "SAFETY_DISCLAIMER", "category": "legit_marker", "weight": -1.2, "advice": [],
+     "patterns": ["(do\\s*not|don'?t|never)\\s*share\\s*(\\w+\\s){0,3}(otp|pin|password|cvv)", "(bank|we)\\s*(will\\s*)?never\\s*ask", "if\\s*not\\s*(done|initiated|made)\\s*by\\s*you", "(किसी\\s*के\\s*साथ\\s*)?(साझा|शेयर)\\s*न\\s*करें"],
+     "en": "It contains a standard bank safety warning, which genuine alerts usually include.", "hi": "इसमें बैंक की सामान्य सुरक्षा चेतावनी है, जो असली संदेशों में होती है।"}
+  ],
+
+  "advice": {
+    "dont_click":        {"en": "Do not open the link.", "hi": "लिंक न खोलें।"},
+    "verify_official":   {"en": "Check directly in your bank's or the official app, or call the number printed on your card.", "hi": "सीधे अपने बैंक के आधिकारिक ऐप में जांचें या कार्ड पर लिखे नंबर पर कॉल करें।"},
+    "dont_share_otp":    {"en": "Never share an OTP, PIN or CVV with anyone.", "hi": "OTP, PIN या CVV किसी को न बताएं।"},
+    "dont_install":      {"en": "Do not install the app or file. If you already did, turn on airplane mode and contact your bank.", "hi": "ऐप या फ़ाइल इंस्टॉल न करें। अगर कर लिया है, तो फ़्लाइट मोड चालू करें और बैंक से संपर्क करें।"},
+    "no_pin_to_receive": {"en": "Do not enter your UPI PIN. Decline the request.", "hi": "UPI PIN न डालें। रिक्वेस्ट को अस्वीकार करें।"},
+    "hang_up":           {"en": "End the call or chat. Real officials do not threaten arrest or ask for money on calls.", "hi": "कॉल या चैट बंद करें। असली अधिकारी कॉल पर गिरफ़्तारी की धमकी या पैसे नहीं मांगते।"},
+    "call_1930":         {"en": "If you lost money, call 1930 or report at cybercrime.gov.in immediately.", "hi": "अगर पैसे गए हैं तो तुरंत 1930 पर कॉल करें या cybercrime.gov.in पर शिकायत करें।"},
+    "dont_call_number":  {"en": "Do not call the number given in the message.", "hi": "संदेश में दिए नंबर पर कॉल न करें।"},
+    "dont_pay_upfront":  {"en": "Do not pay any fee or deposit to get a job, loan or returns.", "hi": "नौकरी, लोन या मुनाफ़े के लिए कोई फ़ीस या जमा राशि न दें।"},
+    "verify_family":     {"en": "Call the person on their old, known number before sending anything.", "hi": "कुछ भी भेजने से पहले उस व्यक्ति के पुराने नंबर पर कॉल करें।"},
+    "block_report":      {"en": "Block the sender and report it on the Sanchar Saathi app (Chakshu).", "hi": "भेजने वाले को ब्लॉक करें और संचार साथी ऐप (चक्षु) पर रिपोर्ट करें।"}
+  },
+
+  "fusion": {
+    "classifier_scale": 0.6,
+    "classifier_clip": 5.0,
+    "no_classifier_prior": -1.5,
+    "bias": 0.0,
+    "high_threshold": 0.85,
+    "medium_threshold": 0.5
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "buckets": 65536,
+  "max_features": 512,
+  "dim": 32,
+  "hidden": 32,
+  "hash": "fnv1a32",
+  "train_rows": 7389,
+  "seed": 13
+}
